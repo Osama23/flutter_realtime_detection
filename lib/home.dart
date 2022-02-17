@@ -21,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   int _imageHeight = 0;
   int _imageWidth = 0;
   String _model = "";
+  dynamic currentObject = null;
 
   @override
   void initState() {
@@ -37,11 +38,11 @@ class _HomePageState extends State<HomePage> {
       //   );
       //   break;
 
-      // case mobilenet:
-      //   res = await Tflite.loadModel(
-      //       model: "assets/mobilenet_v1_1.0_224.tflite",
-      //       labels: "assets/mobilenet_v1_1.0_224.txt");
-      //   break;
+      case mobilenet:
+        res = await Tflite.loadModel(
+           model: "assets/ssd_mobilenet.tflite",
+           labels: "assets/ssd_mobilenet.txt");
+        break;
       //
       // case posenet:
       //   res = await Tflite.loadModel(
@@ -50,6 +51,8 @@ class _HomePageState extends State<HomePage> {
 
       default:
         res = await Tflite.loadModel(
+            // model: "assets/model_unquant.tflite",
+            // labels: "assets/labels.txt");
             model: "assets/ssd_mobilenet.tflite",
             labels: "assets/ssd_mobilenet.txt");
     }
@@ -63,7 +66,7 @@ class _HomePageState extends State<HomePage> {
     loadModel();
   }
 
-  setRecognitions(recognitions, imageHeight, imageWidth) {
+  setRecognitions(recognitions, imageHeight, imageWidth) async{
     print("img height is $imageHeight");
     print("img width is $imageWidth");
     setState(() {
@@ -71,6 +74,18 @@ class _HomePageState extends State<HomePage> {
       _imageHeight = imageHeight;
       _imageWidth = imageWidth;
     });
+   // checkRecognitions(_recognitions);
+  }
+
+  dynamic checkRecognitions(List<dynamic> results) async{
+    results.map((re) {
+      print("current object is ${re["detectedClass"]}");
+      if(re["detectedClass"] == "book"){ // book //
+        currentObject = re;
+        return currentObject;
+      }
+    });
+    return currentObject;
   }
 
   @override
@@ -108,11 +123,13 @@ class _HomePageState extends State<HomePage> {
                   _model,
                   setRecognitions,
                 ),
+                // we need to check if detection label is a car here
                 _recognitions == null || _recognitions == []
                     ? Container()
                     : BndBox(
-                        //  _recognitions == null ? [] : _recognitions,
-                        _recognitions[0],
+                       // _recognitions == null ? [] : _recognitions,
+                       _recognitions,
+                      // _recognitions[0],
                         math.max(_imageHeight, _imageWidth),
                         math.min(_imageHeight, _imageWidth),
                         screen.height,

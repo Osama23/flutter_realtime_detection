@@ -3,8 +3,9 @@ import 'dart:math' as math;
 import 'models.dart';
 
 class BndBox extends StatelessWidget {
-  // final List<dynamic> results;
-  final dynamic results;
+  final List<dynamic> results;
+
+  //final dynamic results;
   final int previewH;
   final int previewW;
   final double screenH;
@@ -16,6 +17,8 @@ class BndBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //  bool _isCarAvailable = results["detectedClass"] == "car";
+    double width = MediaQuery.of(context).size.width;
     List<Widget> _renderBoxes() {
       return results.map((re) {
         var _x = re["rect"]["x"];
@@ -46,29 +49,33 @@ class BndBox extends StatelessWidget {
           if (_y < difH / 2) h -= (difH / 2 - _y) * scaleH;
         }
 
-        return Positioned(
-          left: math.max(0, x),
-          top: math.max(0, y),
-          width: w,
-          height: h,
-          child: Container(
-            padding: EdgeInsets.only(top: 5.0, left: 5.0),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Color.fromRGBO(37, 213, 253, 1.0),
-                width: 3.0,
-              ),
-            ),
-            child: Text(
-              "${re["detectedClass"]} ${(re["confidenceInClass"] * 100).toStringAsFixed(0)}%",
-              style: TextStyle(
-                color: Color.fromRGBO(37, 213, 253, 1.0),
-                fontSize: 14.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        );
+        return re["detectedClass"] != "car"
+            ? Container()
+            : Positioned(
+                left: math.max(0, x),
+                top: math.max(0, y),
+                width: w,
+                height: h,
+                child: Container(
+                  padding: EdgeInsets.only(top: 5.0, left: 5.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: (w > width / 2)
+                          ? Color.fromRGBO(37, 213, 253, 1.0)
+                          : Colors.red,
+                      width: 3.0,
+                    ),
+                  ),
+                  child: Text(
+                    "${re["detectedClass"]} ${(re["confidenceInClass"] * 100).toStringAsFixed(0)}%",
+                    style: TextStyle(
+                      color: Color.fromRGBO(37, 213, 253, 1.0),
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
       }).toList();
     }
 
@@ -137,72 +144,74 @@ class BndBox extends StatelessWidget {
       return lists;
     }
 
-    // return Stack(
-    //   children: model == mobilenet
-    //       ? _renderStrings()
-    //       : model == posenet
-    //         ? _renderKeypoints()
-    //         : _renderBoxes(),
-    // );
     return Stack(
-      children: [
-        _renderBox(),
-      ],
+      children: model == mobilenet
+          ? _renderStrings()
+          : model == posenet
+              ? _renderKeypoints()
+              : _renderBoxes(),
     );
+    // return Stack(
+    //   children: [
+    //     _renderBox(),
+    //   ],
+    // );
   }
 
-  Widget _renderBox() {
-    var _x = results["rect"]["x"];
-    var _w = results["rect"]["w"];
-    var _y = results["rect"]["y"];
-    var _h = results["rect"]["h"];
-    var scaleW, scaleH, x, y, w, h;
-
-    print("object h is $_h");
-    print("object w is $_w");
-    if (screenH / screenW > previewH / previewW) {
-      scaleW = screenH / previewH * previewW;
-      scaleH = screenH;
-      var difW = (scaleW - screenW) / scaleW;
-      x = (_x - difW / 2) * scaleW;
-      w = _w * scaleW;
-      if (_x < difW / 2) w -= (difW / 2 - _x) * scaleW;
-      y = _y * scaleH;
-      h = _h * scaleH;
-    } else {
-      scaleH = screenW / previewW * previewH;
-      scaleW = screenW;
-      var difH = (scaleH - screenH) / scaleH;
-      x = _x * scaleW;
-      w = _w * scaleW;
-      y = (_y - difH / 2) * scaleH;
-      h = _h * scaleH;
-      if (_y < difH / 2) h -= (difH / 2 - _y) * scaleH;
-    }
-
-    return Positioned(
-      left: math.max(0, x),
-      top: math.max(0, y),
-      width: w,
-      height: h,
-      child: Container(
-        padding: EdgeInsets.only(top: 5.0, left: 5.0),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Color.fromRGBO(37, 213, 253, 1.0),
-            width: 3.0,
-          ),
-        ),
-        child: Text(
-          "${results["detectedClass"]} ${(results["confidenceInClass"] * 100).toStringAsFixed(0)}%",
-          style: TextStyle(
-            color: Color.fromRGBO(37, 213, 253, 1.0),
-            fontSize: 14.0,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-
-  }
+// Widget _renderBox() {
+//   var _x = results["rect"]["x"];
+//   var _w = results["rect"]["w"];
+//   var _y = results["rect"]["y"];
+//   var _h = results["rect"]["h"];
+//   var scaleW, scaleH, x, y, w, h;
+//
+//   print("object h is $_h");
+//   print("object w is $_w");
+//   if (screenH / screenW > previewH / previewW) {
+//     scaleW = screenH / previewH * previewW;
+//     scaleH = screenH;
+//     var difW = (scaleW - screenW) / scaleW;
+//     x = (_x - difW / 2) * scaleW;
+//     w = _w * scaleW;
+//     if (_x < difW / 2) w -= (difW / 2 - _x) * scaleW;
+//     y = _y * scaleH;
+//     h = _h * scaleH;
+//   } else {
+//     scaleH = screenW / previewW * previewH;
+//     scaleW = screenW;
+//     var difH = (scaleH - screenH) / scaleH;
+//     x = _x * scaleW;
+//     w = _w * scaleW;
+//     y = (_y - difH / 2) * scaleH;
+//     h = _h * scaleH;
+//     if (_y < difH / 2) h -= (difH / 2 - _y) * scaleH;
+//   }
+//
+//   return
+//     results["detectedClass"] != "laptop"
+//       ? Container()
+//       : Positioned(
+//           left: math.max(0, x),
+//           top: math.max(0, y),
+//           width: w,
+//           height: h,
+//           child: Container(
+//             padding: EdgeInsets.only(top: 5.0, left: 5.0),
+//             decoration: BoxDecoration(
+//               border: Border.all(
+//                 color: Color.fromRGBO(37, 213, 253, 1.0),
+//                 width: 3.0,
+//               ),
+//             ),
+//             child: Text(
+//               "${results["detectedClass"]} ${(results["confidenceInClass"] * 100).toStringAsFixed(0)}%",
+//               style: TextStyle(
+//                 color: Color.fromRGBO(37, 213, 253, 1.0),
+//                 fontSize: 14.0,
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//           ),
+//         );
+// }
 }
